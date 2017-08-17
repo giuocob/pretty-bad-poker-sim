@@ -1,0 +1,6 @@
+node_modules/
+log/
+*.log
+project.sublime-project
+project.sublime-workspace
+/test*.js

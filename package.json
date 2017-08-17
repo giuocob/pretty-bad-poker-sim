@@ -1,0 +1,15 @@
+{
+  "name": "pretty-bad-poker-sim",
+  "version": "0.0.1",
+  "description": "Pretty bad poker sim",
+  "main": "./lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/giuocob/pretty-bad-poker-sim.git"
+  },
+  "engines": {
+    "node" : ">=4.4.0"
+  },
+  "dependencies": {
+  }
+}
