@@ -7,6 +7,7 @@ const getValueFromString = cardUtils.getValueFromString;
 const getSuitFromString = cardUtils.getSuitFromString;
 const handEval = require('../lib/hand-eval');
 const getHandResult = handEval.getHandResult;
+const compareHandResults = handEval.compareHandResults;
 
 function makeHand(strArr) {
 	return strArr.map((str) => {
@@ -236,6 +237,42 @@ describe('handEval', function() {
 					hand: [ 'Ad', 'Qs', 'Jc', 'Th', '6c' ]
 				}
 			);
+		});
+
+	});
+
+	describe('#compareHandResults', function() {
+
+		const HR = {
+			'royal-flush': getHandResult(makeHand([ 'Ah', 'Kh', 'Qh', 'Jh', 'Th' ])),
+			'straight-flush-1': getHandResult(makeHand([ '9h', '8h', '7h', '6h', '5h' ])),
+			'straight-flush-2': getHandResult(makeHand([ '9s', '8s', '7s', '6s', '5s' ])),
+			'4oak-j-1': getHandResult(makeHand([ 'Js', 'Jh', 'Jd', 'Jc', 'Ah' ])),
+			'4oak-j-2': getHandResult(makeHand([ 'Js', 'Jh', 'Jd', 'Jc', 'Ac' ])),
+			'4oak-j-3': getHandResult(makeHand([ 'Js', 'Jh', 'Jd', 'Jc', '7c' ])),
+			'4oak-3': getHandResult(makeHand([ '3s', '3h', '3d', '3c', 'Ad' ])),
+		};
+
+		it('should always prefer hand with stronger result', function() {
+			expect(compareHandResults(HR['royal-flush'], HR['4oak-j-1'])).to.equal(-1);
+			expect(compareHandResults(HR['4oak-j-1'], HR['straight-flush-1'])).to.equal(1);
+		});
+
+		it('should always return 0 when comparing a hand to itself', function() {
+			for (let handName in HR) {
+				expect(compareHandResults(HR[handName], HR[handName])).to.equal(0);
+			}
+		});
+
+		it('should correctly compare straight flushes', function() {
+			expect(compareHandResults(HR['royal-flush'], HR['straight-flush-1'])).to.equal(-1);
+			expect(compareHandResults(HR['straight-flush-1'], HR['straight-flush-2'])).to.equal(0);
+		});
+
+		it('should correctly compare four-of-a-kind', function() {
+			expect(compareHandResults(HR['4oak-j-1'], HR['4oak-j-2'])).to.equal(0);
+			expect(compareHandResults(HR['4oak-j-1'], HR['4oak-j-3'])).to.equal(-1);
+			expect(compareHandResults(HR['4oak-3'], HR['4oak-j-3'])).to.equal(1);
 		});
 
 	});
