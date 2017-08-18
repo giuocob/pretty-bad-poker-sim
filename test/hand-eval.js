@@ -28,7 +28,7 @@ function checkHandResult(actual, expected) {
 				expect(actual.cardIds).to.include(cardId);
 			}
 		} else {
-			expect(expected[key]).to.equal(actual[key]);
+			expect(expected[key]).to.deep.equal(actual[key]);
 		}
 	}
 }
@@ -53,6 +53,11 @@ describe('handEval', function() {
 					[ 'As', '2s', '3s', '4s', '5s', '6s', '7s', '8s' ]
 				));
 			}).to.throw(XError);
+			expect(() => {
+				return getHandResult(makeHand(
+					[ 'As', '2s', '3s', '4s', '5s', '6s', '3s' ]
+				));
+			}).to.throw(XError);
 		});
 
 		it('should detect a straight flush', function() {
@@ -75,6 +80,30 @@ describe('handEval', function() {
 			expect(
 				getHandResult(makeHand([ 'Js', '7s', '6s', '8s', '5d', '4s', '3s' ])).type
 			).to.not.equal('straight-flush');
+		});
+
+		it('should detect a four-of-a-kind', function() {
+			checkHandResult(
+				getHandResult(makeHand([ 'Qc', 'Qd', '5s', '5c', 'Qs', 'Qh', '3c' ])),
+				{
+					type: 'four-of-a-kind',
+					value: getValueFromString('Q'),
+					kickerValues: [ getValueFromString('5') ],
+					hand: [ 'Qc', 'Qd', 'Qs', 'Qh', '5s' ]
+				}
+			);
+		});
+
+		it('should detect a full house', function() {
+			checkHandResult(
+				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Ah' ])),
+				{
+					type: 'full-house',
+					threeValue: getValueFromString('J'),
+					twoValue: getValueFromString('A'),
+					hand: [ 'Jh', 'Jd', 'Jc', 'Ad', 'Ah' ]
+				}
+			);
 		});
 
 	});
