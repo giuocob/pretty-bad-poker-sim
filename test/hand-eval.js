@@ -78,6 +78,14 @@ describe('handEval', function() {
 					hand: [ '8s', '7s', '6s', '5s', '4s' ]
 				}
 			);
+			checkHandResult(
+				getHandResult(makeHand([ '6s', '9s', '4h', '3h', 'Ah', '5h', '2h' ])),
+				{
+					type: 'straight-flush',
+					suit: getSuitFromString('h'),
+					hand: [ '5h', '4h', '3h', '2h', 'Ah' ]
+				}
+			);
 			expect(
 				getHandResult(makeHand([ 'Js', '7s', '6s', '8s', '5d', '4s', '3s' ])).type
 			).to.not.equal('straight-flush');
