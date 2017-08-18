@@ -10,9 +10,16 @@
   "engines": {
     "node": ">=4.4.0"
   },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./test"
+  },
   "dependencies": {
     "pasync": "^1.4.1",
     "seedrandom": "^2.4.3",
     "xerror": "^1.1.2"
+  },
+  "devDependencies": {
+    "chai": "^4.1.1",
+    "mocha": "^3.5.0"
   }
 }
