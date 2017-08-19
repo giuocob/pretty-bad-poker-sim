@@ -59,6 +59,11 @@ describe('handEval', function() {
 					[ 'As', '2s', '3s', '4s', '5s', '6s', '3s' ]
 				));
 			}).to.throw(XError);
+			expect(() => {
+				return getHandResult(makeHand(
+					[ 'As', '2s', '3s', '4s', '5s', '6s' ]
+				), 'bad-evaluator');
+			}).to.throw(XError);
 		});
 
 		it('should detect a straight flush', function() {
@@ -89,6 +94,24 @@ describe('handEval', function() {
 			expect(
 				getHandResult(makeHand([ 'Js', '7s', '6s', '8s', '5d', '4s', '3s' ])).type
 			).to.not.equal('straight-flush');
+			checkHandResult(
+				getHandResult(makeHand([ 'Jc', 'Ts', 'Kc', 'Qc', '9c', '2c', 'Tc' ]), 'flush'),
+				{
+					type: 'flush',
+					suit: getSuitFromString('c'),
+					hand: [ 'Kc', 'Qc', 'Jc', 'Tc', '9c' ],
+					forcedResultType: true
+				}
+			);
+			checkHandResult(
+				getHandResult(makeHand([ 'Jc', 'Ts', 'Kc', 'Qc', '9c', '2c', 'Tc' ]), 'straight'),
+				{
+					type: 'straight',
+					highValue: getValueFromString('K'),
+					hand: [ 'Kc', 'Qc', 'Jc', 'Ts', '9c' ],
+					forcedResultType: true
+				}
+			);
 		});
 
 		it('should detect a four-of-a-kind', function() {
@@ -111,6 +134,16 @@ describe('handEval', function() {
 					threeValue: getValueFromString('J'),
 					twoValue: getValueFromString('A'),
 					hand: [ 'Jh', 'Jd', 'Jc', 'Ad', 'Ah' ]
+				}
+			);
+			checkHandResult(
+				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'full-house'),
+				{
+					type: 'full-house',
+					threeValue: getValueFromString('J'),
+					twoValue: getValueFromString('8'),
+					hand: [ 'Js', 'Jh', 'Jd', '8s', '8c' ],
+					forcedResultType: true
 				}
 			);
 		});
@@ -185,6 +218,15 @@ describe('handEval', function() {
 			expect(
 				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Kh', 'Jc', 'Th', '9d' ])).type
 			).to.not.equal('three-of-a-kind');
+			checkHandResult(
+				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'three-of-a-kind'),
+				{
+					type: 'three-of-a-kind',
+					value: getValueFromString('J'),
+					hand: [ 'Js', 'Jh', 'Jd', 'Jc', 'Ad' ],
+					forcedResultType: true
+				}
+			);
 		});
 
 		it('should detect a two-pair', function() {
@@ -209,6 +251,16 @@ describe('handEval', function() {
 			expect(
 				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', 'Kh' ])).type
 			).to.not.equal('two-pair');
+			checkHandResult(
+				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'two-pair'),
+				{
+					type: 'two-pair',
+					values: [ getValueFromString('J'), getValueFromString('8') ],
+					kickerValues: [ getValueFromString('A') ],
+					hand: [ 'Js', 'Jh', '8s', '8c', 'Ad' ],
+					forcedResultType: true
+				}
+			);
 		});
 
 		it('should detect a pair', function() {
@@ -228,9 +280,23 @@ describe('handEval', function() {
 			expect(
 				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', '5c', 'Jh' ])).type
 			).to.not.equal('pair');
+			checkHandResult(
+				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'pair'),
+				{
+					type: 'pair',
+					value: getValueFromString('J'),
+					kickerValues: [
+						getValueFromString('A'),
+						getValueFromString('J'),
+						getValueFromString('J'),
+					],
+					hand: [ 'Js', 'Jh', 'Ad', 'Jd', 'Jc' ],
+					forcedResultType: true
+				}
+			);
 		});
 
-		it('should calculate a high-cards result if no other result is present', function() {
+		it('should calculate a high-cards', function() {
 			checkHandResult(
 				getHandResult(makeHand([ '4c', '5h', 'Qs', '6c', 'Th', 'Ad', 'Jc' ])),
 				{
@@ -243,6 +309,21 @@ describe('handEval', function() {
 						getValueFromString('6')
 					],
 					hand: [ 'Ad', 'Qs', 'Jc', 'Th', '6c' ]
+				}
+			);
+			checkHandResult(
+				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', 'As', 'Ad', 'Js' ]), 'high-cards'),
+				{
+					type: 'high-cards',
+					kickerValues: [
+						getValueFromString('A'),
+						getValueFromString('A'),
+						getValueFromString('J'),
+						getValueFromString('J'),
+						getValueFromString('J')
+					],
+					hand: [ 'As', 'Ad', 'Js', 'Jh', 'Jd' ],
+					forcedResultType: true
 				}
 			);
 		});
