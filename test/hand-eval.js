@@ -259,11 +259,43 @@ describe('handEval', function() {
 			'4oak-j-2': getHandResult(makeHand([ 'Js', 'Jh', 'Jd', 'Jc', 'Ac' ])),
 			'4oak-j-3': getHandResult(makeHand([ 'Js', 'Jh', 'Jd', 'Jc', '7c' ])),
 			'4oak-3': getHandResult(makeHand([ '3s', '3h', '3d', '3c', 'Ad' ])),
+			'fh-1': getHandResult(makeHand([ 'Ah', 'As', 'Ad', 'Kc', 'Kd' ])),
+			'fh-2': getHandResult(makeHand([ 'Ah', 'As', 'Ac', 'Kc', 'Kd' ])),
+			'fh-3': getHandResult(makeHand([ 'Ah', 'As', 'Ad', 'Jc', 'Jd' ])),
+			'fh-4': getHandResult(makeHand([ '9h', '9s', '9d', 'Ac', 'Ad' ])),
+			'flush-1': getHandResult(makeHand([ 'Qs', 'Ts', '8s', '7s', '6s' ])),
+			'flush-2': getHandResult(makeHand([ 'Qd', 'Td', '8d', '7d', '6d' ])),
+			'flush-3': getHandResult(makeHand([ 'Js', 'Ts', '9s', '8s', '6s' ])),
+			'flush-4': getHandResult(makeHand([ 'Qs', '6s', '4s', '3s', '2s' ])),
+			'straight-1': getHandResult(makeHand([ 'Qs', 'Js', 'Td', '9s', '8c' ])),
+			'straight-2': getHandResult(makeHand([ 'Qh', 'Jh', 'Td', '9s', '8c' ])),
+			'straight-3': getHandResult(makeHand([ 'As', 'Ks', 'Qd', 'Js', 'Tc' ])),
+			'straight-4': getHandResult(makeHand([ '5s', '4s', '3d', '2s', 'Ac' ])),
+			'3oak-1': getHandResult(makeHand([ '9s', '9h', '9d', 'As', 'Js' ])),
+			'3oak-2': getHandResult(makeHand([ '9s', '9h', '9d', 'As', 'Ks' ])),
+			'3oak-3': getHandResult(makeHand([ '7s', '7h', '7d', 'As', 'Qs' ])),
+			'2pair-1': getHandResult(makeHand([ 'Ks', 'Kd', 'Js', 'Jd', '4h' ])),
+			'2pair-2': getHandResult(makeHand([ 'Ks', 'Kd', 'Js', 'Jd', '8h' ])),
+			'2pair-3': getHandResult(makeHand([ 'Ks', 'Kd', '5s', '5d', '6h' ])),
+			'2pair-4': getHandResult(makeHand([ 'As', 'Ad', '3s', '3d', '6h' ])),
+			'2pair-5': getHandResult(makeHand([ 'Qs', 'Qd', '7s', '7d', '6h' ])),
+			'pair-1': getHandResult(makeHand([ '9s', '9h', 'Ad', 'Ks', 'Js' ])),
+			'pair-2': getHandResult(makeHand([ '9s', '9h', 'Ad', 'Ks', 'Qs' ])),
+			'pair-3': getHandResult(makeHand([ '8s', '8h', 'As', 'Ks', 'Js' ])),
+			'hc-1': getHandResult(makeHand([ 'Ks', 'Jh', 'Ts', '9s', '6s' ])),
+			'hc-2': getHandResult(makeHand([ 'Ks', 'Qh', 'Ts', '9s', '5s' ]))
 		};
 
-		it('should always prefer hand with stronger result', function() {
+		it('should always prefer hand with stronger result type', function() {
 			expect(compareHandResults(HR['royal-flush'], HR['4oak-j-1'])).to.equal(-1);
 			expect(compareHandResults(HR['4oak-j-1'], HR['straight-flush-1'])).to.equal(1);
+			expect(compareHandResults(HR['4oak-j-3'], HR['fh-1'])).to.equal(-1);
+			expect(compareHandResults(HR['fh-1'], HR['flush-1'])).to.equal(-1);
+			expect(compareHandResults(HR['flush-1'], HR['straight-1'])).to.equal(-1);
+			expect(compareHandResults(HR['straight-1'], HR['3oak-1'])).to.equal(-1);
+			expect(compareHandResults(HR['3oak-1'], HR['2pair-1'])).to.equal(-1);
+			expect(compareHandResults(HR['2pair-1'], HR['pair-1'])).to.equal(-1);
+			expect(compareHandResults(HR['pair-1'], HR['hc-1'])).to.equal(-1);
 		});
 
 		it('should always return 0 when comparing a hand to itself', function() {
@@ -281,6 +313,47 @@ describe('handEval', function() {
 			expect(compareHandResults(HR['4oak-j-1'], HR['4oak-j-2'])).to.equal(0);
 			expect(compareHandResults(HR['4oak-j-1'], HR['4oak-j-3'])).to.equal(-1);
 			expect(compareHandResults(HR['4oak-3'], HR['4oak-j-3'])).to.equal(1);
+		});
+
+		it('should correctly compare full house', function() {
+			expect(compareHandResults(HR['fh-1'], HR['fh-2'])).to.equal(0);
+			expect(compareHandResults(HR['fh-1'], HR['fh-3'])).to.equal(-1);
+			expect(compareHandResults(HR['fh-1'], HR['fh-4'])).to.equal(-1);
+		});
+
+		it('should correctly compare flush', function() {
+			expect(compareHandResults(HR['flush-1'], HR['flush-2'])).to.equal(0);
+			expect(compareHandResults(HR['flush-2'], HR['flush-3'])).to.equal(-1);
+			expect(compareHandResults(HR['flush-2'], HR['flush-4'])).to.equal(-1);
+			expect(compareHandResults(HR['flush-3'], HR['flush-4'])).to.equal(1);
+		});
+
+		it('should correctly compare straight', function() {
+			expect(compareHandResults(HR['straight-1'], HR['straight-2'])).to.equal(0);
+			expect(compareHandResults(HR['straight-1'], HR['straight-3'])).to.equal(1);
+			expect(compareHandResults(HR['straight-1'], HR['straight-4'])).to.equal(-1);
+			expect(compareHandResults(HR['straight-3'], HR['straight-4'])).to.equal(-1);
+		});
+
+		it('should correctly compare three-of-a-kind', function() {
+			expect(compareHandResults(HR['3oak-1'], HR['3oak-2'])).to.equal(1);
+			expect(compareHandResults(HR['3oak-1'], HR['3oak-3'])).to.equal(-1);
+		});
+
+		it('should correctly compare two-pair', function() {
+			expect(compareHandResults(HR['2pair-1'], HR['2pair-2'])).to.equal(1);
+			expect(compareHandResults(HR['2pair-1'], HR['2pair-3'])).to.equal(-1);
+			expect(compareHandResults(HR['2pair-3'], HR['2pair-4'])).to.equal(1);
+			expect(compareHandResults(HR['2pair-3'], HR['2pair-5'])).to.equal(-1);
+		});
+
+		it('should correctly compare pair', function() {
+			expect(compareHandResults(HR['pair-1'], HR['pair-2'])).to.equal(1);
+			expect(compareHandResults(HR['pair-1'], HR['pair-3'])).to.equal(-1);
+		});
+
+		it('should correctly compare high cards', function() {
+			expect(compareHandResults(HR['hc-1'], HR['hc-2'])).to.equal(1);
 		});
 
 	});
