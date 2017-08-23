@@ -8,6 +8,7 @@ const getSuitFromString = cardUtils.getSuitFromString;
 const handEval = require('../lib/hand-eval');
 const getHandResult = handEval.getHandResult;
 const compareHandResults = handEval.compareHandResults;
+const getPocketEvaluation = handEval.getPocketEvaluation;
 
 function makeHand(strArr) {
 	return strArr.map((str) => {
@@ -35,6 +36,81 @@ function checkHandResult(actual, expected) {
 }
 
 describe('handEval', function() {
+
+	describe('#getPocketValuation', function() {
+
+		it('should do input sanity checking', function() {
+			expect(() => {
+				return getPocketEvaluation(makeHand(
+					[ 'As', 'NICECARDBRO' ]
+				));
+			}).to.throw(XError);
+			expect(() => {
+				return getPocketEvaluation(makeHand(
+					[ 'As', '2s', '3s', '4s', '5s' ]
+				));
+			}).to.throw(XError);
+			expect(() => {
+				return getPocketEvaluation(makeHand(
+					[ 'As', 'As' ]
+				));
+			}).to.throw(XError);
+		});
+
+		it('should return correct results', function() {
+			checkHandResult(
+				getPocketEvaluation(makeHand([ 'Ac', 'As' ])),
+				{
+					pairValue: cardUtils.ACE,
+					inclusiveStraightCount: 0,
+					semiInclusiveStraightCount: 2
+				}
+			);
+			checkHandResult(
+				getPocketEvaluation(makeHand([ '3c', '3d' ])),
+				{
+					pairValue: cardUtils.THREE,
+					inclusiveStraightCount: 0,
+					semiInclusiveStraightCount: 3
+				}
+			);
+			checkHandResult(
+				getPocketEvaluation(makeHand([ 'Qh', 'Kh' ])),
+				{
+					suitedSuit: cardUtils.HEARTS,
+					valueSpread: 1,
+					inclusiveStraightCount: 2,
+					semiInclusiveStraightCount: 1
+				}
+			);
+			checkHandResult(
+				getPocketEvaluation(makeHand([ '9h', '6h' ])),
+				{
+					suitedSuit: cardUtils.HEARTS,
+					valueSpread: 3,
+					inclusiveStraightCount: 2,
+					semiInclusiveStraightCount: 6
+				}
+			);
+			checkHandResult(
+				getPocketEvaluation(makeHand([ 'Ah', '2s' ])),
+				{
+					valueSpread: 1,
+					inclusiveStraightCount: 1,
+					semiInclusiveStraightCount: 2
+				}
+			);
+			checkHandResult(
+				getPocketEvaluation(makeHand([ 'Td', '4c' ])),
+				{
+					valueSpread: 6,
+					inclusiveStraightCount: 0,
+					semiInclusiveStraightCount: 9
+				}
+			);
+		});
+
+	});
 
 	describe('#getHandResult', function() {
 
