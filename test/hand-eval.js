@@ -7,6 +7,7 @@ const getValueFromString = cardUtils.getValueFromString;
 const getSuitFromString = cardUtils.getSuitFromString;
 const handEval = require('../lib/hand-eval');
 const getHandResult = handEval.getHandResult;
+const getEvaluationByType = handEval.getEvaluationByType;
 const compareHandResults = handEval.compareHandResults;
 const getPocketEvaluation = handEval.getPocketEvaluation;
 
@@ -18,6 +19,10 @@ function makeHand(strArr) {
 }
 
 function checkHandResult(actual, expected) {
+	if (expected === null) {
+		expect(actual).to.equal(null);
+		return;
+	}
 	expect(actual).to.exist;
 	for (let key in expected) {
 		if (key === 'cardIds' || key === 'hand') {
@@ -112,7 +117,7 @@ describe('handEval', function() {
 
 	});
 
-	describe('#getHandResult', function() {
+	describe('#getHandResult, #getEvaluationByType', function() {
 
 		it('should do input sanity checking', function() {
 			expect(() => {
@@ -136,7 +141,7 @@ describe('handEval', function() {
 				));
 			}).to.throw(XError);
 			expect(() => {
-				return getHandResult(makeHand(
+				return getEvaluationByType(makeHand(
 					[ 'As', '2s', '3s', '4s', '5s', '6s' ]
 				), 'bad-evaluator');
 			}).to.throw(XError);
@@ -171,21 +176,19 @@ describe('handEval', function() {
 				getHandResult(makeHand([ 'Js', '7s', '6s', '8s', '5d', '4s', '3s' ])).type
 			).to.not.equal('straight-flush');
 			checkHandResult(
-				getHandResult(makeHand([ 'Jc', 'Ts', 'Kc', 'Qc', '9c', '2c', 'Tc' ]), 'flush'),
+				getEvaluationByType(makeHand([ 'Jc', 'Ts', 'Kc', 'Qc', '9c', '2c', 'Tc' ]), 'flush'),
 				{
 					type: 'flush',
 					suit: getSuitFromString('c'),
-					hand: [ 'Kc', 'Qc', 'Jc', 'Tc', '9c' ],
-					forcedResultType: true
+					hand: [ 'Kc', 'Qc', 'Jc', 'Tc', '9c' ]
 				}
 			);
 			checkHandResult(
-				getHandResult(makeHand([ 'Jc', 'Ts', 'Kc', 'Qc', '9c', '2c', 'Tc' ]), 'straight'),
+				getEvaluationByType(makeHand([ 'Jc', 'Ts', 'Kc', 'Qc', '9c', '2c', 'Tc' ]), 'straight'),
 				{
 					type: 'straight',
 					highValue: getValueFromString('K'),
-					hand: [ 'Kc', 'Qc', 'Jc', 'Ts', '9c' ],
-					forcedResultType: true
+					hand: [ 'Kc', 'Qc', 'Jc', 'Ts', '9c' ]
 				}
 			);
 		});
@@ -213,13 +216,12 @@ describe('handEval', function() {
 				}
 			);
 			checkHandResult(
-				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'full-house'),
+				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'full-house'),
 				{
 					type: 'full-house',
 					threeValue: getValueFromString('J'),
 					twoValue: getValueFromString('8'),
-					hand: [ 'Js', 'Jh', 'Jd', '8s', '8c' ],
-					forcedResultType: true
+					hand: [ 'Js', 'Jh', 'Jd', '8s', '8c' ]
 				}
 			);
 		});
@@ -295,12 +297,11 @@ describe('handEval', function() {
 				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Kh', 'Jc', 'Th', '9d' ])).type
 			).to.not.equal('three-of-a-kind');
 			checkHandResult(
-				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'three-of-a-kind'),
+				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'three-of-a-kind'),
 				{
 					type: 'three-of-a-kind',
 					value: getValueFromString('J'),
-					hand: [ 'Js', 'Jh', 'Jd', 'Jc', 'Ad' ],
-					forcedResultType: true
+					hand: [ 'Js', 'Jh', 'Jd', 'Jc', 'Ad' ]
 				}
 			);
 		});
@@ -328,13 +329,12 @@ describe('handEval', function() {
 				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', 'Kh' ])).type
 			).to.not.equal('two-pair');
 			checkHandResult(
-				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'two-pair'),
+				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'two-pair'),
 				{
 					type: 'two-pair',
 					values: [ getValueFromString('J'), getValueFromString('8') ],
 					kickerValues: [ getValueFromString('A') ],
-					hand: [ 'Js', 'Jh', '8s', '8c', 'Ad' ],
-					forcedResultType: true
+					hand: [ 'Js', 'Jh', '8s', '8c', 'Ad' ]
 				}
 			);
 		});
@@ -357,7 +357,7 @@ describe('handEval', function() {
 				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', '5c', 'Jh' ])).type
 			).to.not.equal('pair');
 			checkHandResult(
-				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'pair'),
+				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'pair'),
 				{
 					type: 'pair',
 					value: getValueFromString('J'),
@@ -366,8 +366,7 @@ describe('handEval', function() {
 						getValueFromString('J'),
 						getValueFromString('J'),
 					],
-					hand: [ 'Js', 'Jh', 'Ad', 'Jd', 'Jc' ],
-					forcedResultType: true
+					hand: [ 'Js', 'Jh', 'Ad', 'Jd', 'Jc' ]
 				}
 			);
 		});
@@ -388,7 +387,7 @@ describe('handEval', function() {
 				}
 			);
 			checkHandResult(
-				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', 'As', 'Ad', 'Js' ]), 'high-cards'),
+				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', 'As', 'Ad', 'Js' ]), 'high-cards'),
 				{
 					type: 'high-cards',
 					kickerValues: [
@@ -398,9 +397,202 @@ describe('handEval', function() {
 						getValueFromString('J'),
 						getValueFromString('J')
 					],
-					hand: [ 'As', 'Ad', 'Js', 'Jh', 'Jd' ],
-					forcedResultType: true
+					hand: [ 'As', 'Ad', 'Js', 'Jh', 'Jd' ]
 				}
+			);
+		});
+
+		it('should detect a flush draw', function() {
+			checkHandResult(
+				getEvaluationByType(makeHand([ 'As', '5s', '6d', 'Kd', 'Ks', '2s' ]), 'flush-draw'),
+				{
+					type: 'flush-draw',
+					suit: getSuitFromString('s'),
+					remainingCards: 1,
+					kickerValues: [
+						getValueFromString('A'),
+						getValueFromString('K'),
+						getValueFromString('5'),
+						getValueFromString('2')
+					],
+					hand: [ 'As', 'Ks', '5s', '2s' ]
+				}
+			);
+			checkHandResult(
+				getEvaluationByType(makeHand([ 'Ah', '5h', '6d', 'Kd', 'Kh' ]), 'flush-draw'),
+				{
+					type: 'flush-draw',
+					suit: getSuitFromString('h'),
+					remainingCards: 2,
+					kickerValues: [
+						getValueFromString('A'),
+						getValueFromString('K'),
+						getValueFromString('5')
+					],
+					hand: [ 'Ah', 'Kh', '5h' ]
+				}
+			);
+			checkHandResult(
+				getEvaluationByType(makeHand([ 'Ah', '5h', '6h', 'Kd', 'Kh', '3h' ]), 'flush-draw'),
+				{
+					type: 'flush-draw',
+					suit: getSuitFromString('h'),
+					remainingCards: 0,
+					kickerValues: [
+						getValueFromString('A'),
+						getValueFromString('K'),
+						getValueFromString('6'),
+						getValueFromString('5'),
+						getValueFromString('3')
+					],
+					hand: [ 'Ah', 'Kh', '6h', '5h', '3h' ]
+				}
+			);
+			expect(() => {
+				return getEvaluationByType(makeHand(
+					[ 'As', '2s', '3s', '4s', '6h', '7d', 'Qc' ]
+				), 'flush-draw');
+			}).to.throw(XError);
+			checkHandResult(
+				getEvaluationByType(makeHand([ 'Ah', '5c', '6c', 'Kd', 'Ks' ]), 'flush-draw'),
+				null
+			);
+			checkHandResult(
+				getEvaluationByType(makeHand([ 'Ah', '5c', '6c', 'Kd', 'Ks', 'Jc' ]), 'flush-draw'),
+				null
+			);
+		});
+
+		it('should detect a straight draw', function() {
+			checkHandResult(
+				getEvaluationByType(makeHand([ '2s', '3s', '4h', '5h', 'Td', 'Kc' ]), 'straight-draw'),
+				{
+					type: 'straight-draw',
+					highestCardsToStraight: 4,
+					highestCardsToStraightCombinations: 2,
+					draws: [ {
+						cardsToStraight: 4,
+						highValue: getValueFromString('6'),
+						neededValues: [ getValueFromString('6') ]
+					},
+					{
+						cardsToStraight: 4,
+						highValue: getValueFromString('5'),
+						neededValues: [ getValueFromString('A') ]
+					} ]
+				}
+			);
+			checkHandResult(
+				getEvaluationByType(makeHand([ 'As', '3s', '4s', '5s', '6s', '7d' ]), 'straight-draw'),
+				{
+					type: 'straight-draw',
+					highestCardsToStraight: 5,
+					highestCardsToStraightCombinations: 1,
+					draws: [ {
+						cardsToStraight: 5,
+						highValue: getValueFromString('7'),
+						neededValues: [ ]
+					},
+					{
+						cardsToStraight: 4,
+						highValue: getValueFromString('8'),
+						neededValues: [ getValueFromString('8') ]
+					},
+					{
+						cardsToStraight: 4,
+						highValue: getValueFromString('6'),
+						neededValues: [ getValueFromString('2') ]
+					} ]
+				}
+			);
+			checkHandResult(
+				getEvaluationByType(makeHand([ 'Td', '8d', '9s', 'Th', 'Qh', 'Kh' ]), 'straight-draw'),
+				{
+					type: 'straight-draw',
+					highestCardsToStraight: 4,
+					highestCardsToStraightCombinations: 1,
+					draws: [ {
+						cardsToStraight: 4,
+						highValue: getValueFromString('K'),
+						neededValues: [ getValueFromString('J') ]
+					} ]
+				}
+			);
+			checkHandResult(
+				getEvaluationByType(makeHand([ '4d', '5d', '6d', '7s', '9h' ]), 'straight-draw'),
+				{
+					type: 'straight-draw',
+					highestCardsToStraight: 4,
+					highestCardsToStraightCombinations: 2,
+					draws: [ {
+						cardsToStraight: 4,
+						highValue: getValueFromString('9'),
+						neededValues: [ getValueFromString('8') ]
+					}, {
+						cardsToStraight: 4,
+						highValue: getValueFromString('7'),
+						neededValues: [ getValueFromString('3') ]
+					}, {
+						cardsToStraight: 3,
+						highValue: getValueFromString('T'),
+						neededValues: [ getValueFromString('T'), getValueFromString('8') ]
+					}, {
+						cardsToStraight: 3,
+						highValue: getValueFromString('6'),
+						neededValues: [ getValueFromString('3'), getValueFromString('2') ]
+					} ]
+				}
+			);
+			checkHandResult(
+				getEvaluationByType(makeHand([ '5d', '7h', '9d', 'Jh', 'Kd' ]), 'straight-draw'),
+				{
+					type: 'straight-draw',
+					highestCardsToStraight: 3,
+					highestCardsToStraightCombinations: 3,
+					draws: [ {
+						cardsToStraight: 3,
+						highValue: getValueFromString('K'),
+						neededValues: [ getValueFromString('Q'), getValueFromString('T') ]
+					}, {
+						cardsToStraight: 3,
+						highValue: getValueFromString('J'),
+						neededValues: [ getValueFromString('T'), getValueFromString('8') ]
+					}, {
+						cardsToStraight: 3,
+						highValue: getValueFromString('9'),
+						neededValues: [ getValueFromString('8'), getValueFromString('6') ]
+					} ]
+				}
+			);
+			checkHandResult(
+				getEvaluationByType(makeHand([ '2s', '3s', '4h', 'Tc', 'Jc' ]), 'straight-draw'),
+				{
+					type: 'straight-draw',
+					highestCardsToStraight: 3,
+					highestCardsToStraightCombinations: 2,
+					draws: [ {
+						cardsToStraight: 3,
+						highValue: getValueFromString('6'),
+						neededValues: [ getValueFromString('6'), getValueFromString('5') ]
+					}, {
+						cardsToStraight: 3,
+						highValue: getValueFromString('5'),
+						neededValues: [ getValueFromString('A'), getValueFromString('5') ]
+					} ]
+				}
+			);
+			expect(() => {
+				return getEvaluationByType(makeHand(
+					[ 'As', '2s', '3s', '4s', '5h', '7d', 'Qc' ]
+				), 'straight-draw');
+			}).to.throw(XError);
+			checkHandResult(
+				getEvaluationByType(makeHand([ '3h', '4c', '8c', '9d', 'Ks' ]), 'straight-draw'),
+				null
+			);
+			checkHandResult(
+				getEvaluationByType(makeHand([ '3h', '4c', '5c', 'Kd', 'Ks', 'Jc' ]), 'flush-draw'),
+				null
 			);
 		});
 
