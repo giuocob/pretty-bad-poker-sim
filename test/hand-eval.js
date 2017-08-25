@@ -10,6 +10,7 @@ const getHandResult = handEval.getHandResult;
 const getEvaluationByType = handEval.getEvaluationByType;
 const compareHandResults = handEval.compareHandResults;
 const getPocketEvaluation = handEval.getPocketEvaluation;
+const getFullEvaluation = handEval.getFullEvaluation;
 
 function makeHand(strArr) {
 	return strArr.map((str) => {
@@ -23,20 +24,34 @@ function checkHandResult(actual, expected) {
 		expect(actual).to.equal(null);
 		return;
 	}
-	expect(actual).to.exist;
-	for (let key in expected) {
-		if (key === 'cardIds' || key === 'hand') {
-			expect(actual.cardIds).to.exist;
-			if (key === 'hand') {
-				expected.cardIds = makeHand(expected.hand);
+
+	function checkEvaluation(actualEval, expectedEval) {
+		expect(actualEval).to.exist;
+		for (let key in expectedEval) {
+			if (key === 'cardIds' || key === 'hand') {
+				expect(actualEval.cardIds).to.exist;
+				if (key === 'hand') {
+					expectedEval.cardIds = makeHand(expectedEval.hand);
+				}
+				expect(expectedEval.cardIds.length).to.equal(actualEval.cardIds.length);
+				for (let cardId of expectedEval.cardIds) {
+					expect(actualEval.cardIds).to.include(cardId);
+				}
+			} else {
+				expect(expectedEval[key]).to.deep.equal(actualEval[key]);
 			}
-			expect(expected.cardIds.length).to.equal(actual.cardIds.length);
-			for (let cardId of expected.cardIds) {
-				expect(actual.cardIds).to.include(cardId);
-			}
-		} else {
-			expect(expected[key]).to.deep.equal(actual[key]);
 		}
+	}
+
+	if (expected.result && expected.evaluations) {
+		// Full evaluation
+		checkEvaluation(actual.result, expected.result);
+		expect(actual.evaluations.length).to.equal(expected.evaluations.length);
+		for (let i = 0; i < expected.evaluations.length; i++) {
+			checkEvaluation(actual.evaluations[i], expected.evaluations[i]);
+		}
+	} else {
+		checkEvaluation(actual, expected);
 	}
 }
 
@@ -703,6 +718,172 @@ describe('handEval', function() {
 
 		it('should correctly compare high cards', function() {
 			expect(compareHandResults(HR['hc-1'], HR['hc-2'])).to.equal(1);
+		});
+
+	});
+
+	describe('#getFullEvaluation', function() {
+
+		it('should do input sanity checking', function() {
+			expect(() => {
+				return getFullEvaluation(makeHand(
+					[ 'As', 'Ac' ]
+				));
+			}).to.throw(XError);
+			expect(() => {
+				return getFullEvaluation(makeHand(
+					[ 'As', 'Ac', 'Ks', 'Kc', 'Jd', '9s', '7c', '3c' ]
+				));
+			}).to.throw(XError);
+		});
+
+		it('should correctly evaluate very strong hands', function() {
+			checkHandResult(
+				getFullEvaluation(makeHand([ '2s', '2h', '3h', '4h', '5h', '6h' ])),
+				{
+					result: {
+						type: 'straight-flush',
+						suit: getSuitFromString('h'),
+						highValue: getValueFromString('6')
+					},
+					evaluations: [ {
+						type: 'straight-flush',
+						suit: getSuitFromString('h'),
+						highValue: getValueFromString('6')
+					} ]
+				}
+			);
+			checkHandResult(
+				getFullEvaluation(makeHand([ '2s', '2h', '2d', '2c', '5h', '6h','7h' ])),
+				{
+					result: {
+						type: 'four-of-a-kind',
+						value: getValueFromString('2')
+					},
+					evaluations: [ {
+						type: 'four-of-a-kind',
+						value: getValueFromString('2')
+					} ]
+				}
+			);
+			checkHandResult(
+				getFullEvaluation(makeHand([ '2c', '2h', '2s', '3s', '3d', '4s', '4c' ])),
+				{
+					result: {
+						type: 'full-house',
+						threeValue: getValueFromString('2'),
+						twoValue: getValueFromString('4')
+					},
+					evaluations: [ {
+						type: 'full-house',
+						threeValue: getValueFromString('2'),
+						twoValue: getValueFromString('4')
+					} ]
+				}
+			);
+		});
+
+		it('should include results and all possible draws', function() {
+			checkHandResult(
+				getFullEvaluation(makeHand([ 'Kh', 'Jh', 'Th', '4s', '3s', '2s' ])),
+				{
+					result: {
+						type: 'high-cards'
+					},
+					evaluations: [ {
+						type: 'high-cards'
+					} ]
+				}
+			);
+			checkHandResult(
+				getFullEvaluation(makeHand([ '4h', '7h', 'Th', 'Jh', 'Qh', '7c', '7s' ])),
+				{
+					result: {
+						type: 'flush',
+						suit: getSuitFromString('h')
+					},
+					evaluations: [ {
+						type: 'three-of-a-kind',
+						value: getValueFromString('7')
+					}, {
+						type: 'flush',
+						suit: getSuitFromString('h')
+					} ]
+				}
+			);
+			checkHandResult(
+				getFullEvaluation(makeHand([ '4s', '5s', '6s', '7s', '5h', '7h' ])),
+				{
+					result: {
+						type: 'two-pair',
+						values: [ getValueFromString('7'), getValueFromString('5') ]
+					},
+					evaluations: [ {
+						type: 'two-pair',
+						values: [ getValueFromString('7'), getValueFromString('5') ]
+					}, {
+						type: 'flush-draw',
+						suit: getSuitFromString('s')
+					}, {
+						type: 'straight-draw',
+						highestCardsToStraight: 4,
+						highestCardsToStraightCombinations: 2
+					} ]
+				}
+			);
+		});
+
+		it('should not include draws in 7 card hands', function() {
+			checkHandResult(
+				getFullEvaluation(makeHand([ 'Kh', 'Ks', 'Jc', '8d', '7d', '6d', '5d' ])),
+				{
+					result: {
+						type: 'pair',
+						value: getValueFromString('K')
+					},
+					evaluations: [ {
+						type: 'pair',
+						value: getValueFromString('K')
+					} ]
+				}
+			);
+		});
+
+		it('should not include straight/flush draws in hands with a made straight/flush', function() {
+			checkHandResult(
+				getFullEvaluation(makeHand([ 'As', 'Jc', 'Tc', '8c', '6c', '4c' ])),
+				{
+					result: {
+						type: 'flush',
+						suit: getSuitFromString('c')
+					},
+					evaluations: [ {
+						type: 'high-cards'
+					}, {
+						type: 'flush',
+						suit: getSuitFromString('c')
+					} ]
+				}
+			);
+			checkHandResult(
+				getFullEvaluation(makeHand([ 'Kc', 'Qh', 'Jh', 'Th', '6h', '4h' ])),
+				{
+					result: {
+						type: 'flush',
+						suit: getSuitFromString('h')
+					},
+					evaluations: [ {
+						type: 'high-cards'
+					}, {
+						type: 'flush',
+						suit: getSuitFromString('h')
+					}, {
+						type: 'straight-draw',
+						highestCardsToStraight: 4,
+						highestCardsToStraightCombinations: 2
+					} ]
+				}
+			);
 		});
 
 	});
