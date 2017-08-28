@@ -14,6 +14,8 @@
     "test": "./node_modules/.bin/mocha ./test"
   },
   "dependencies": {
+    "common-query": "1.10.6",
+    "common-schema": "1.9.3",
     "pasync": "^1.4.1",
     "seedrandom": "^2.4.3",
     "xerror": "^1.1.2"

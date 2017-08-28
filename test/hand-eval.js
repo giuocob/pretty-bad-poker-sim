@@ -10,6 +10,7 @@ const getHandResult = handEval.getHandResult;
 const getEvaluationByType = handEval.getEvaluationByType;
 const compareHandResults = handEval.compareHandResults;
 const getPocketEvaluation = handEval.getPocketEvaluation;
+const getResultEvaluation = handEval.getResultEvaluation;
 const getFullEvaluation = handEval.getFullEvaluation;
 
 function makeHand(strArr) {
@@ -166,7 +167,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ 'Jc', 'Ts', 'Kc', 'Qc', '9c', '2c', 'Tc' ])),
 				{
-					type: 'straight-flush',
+					evalType: 'straight-flush',
 					suit: getSuitFromString('c'),
 					hand: [ 'Kc', 'Qc', 'Jc', 'Tc', '9c' ]
 				}
@@ -174,7 +175,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ 'Js', '7s', '6s', '8s', '5s', '4s', '3s' ])),
 				{
-					type: 'straight-flush',
+					evalType: 'straight-flush',
 					suit: getSuitFromString('s'),
 					hand: [ '8s', '7s', '6s', '5s', '4s' ]
 				}
@@ -182,18 +183,18 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ '6s', '9s', '4h', '3h', 'Ah', '5h', '2h' ])),
 				{
-					type: 'straight-flush',
+					evalType: 'straight-flush',
 					suit: getSuitFromString('h'),
 					hand: [ '5h', '4h', '3h', '2h', 'Ah' ]
 				}
 			);
 			expect(
-				getHandResult(makeHand([ 'Js', '7s', '6s', '8s', '5d', '4s', '3s' ])).type
+				getHandResult(makeHand([ 'Js', '7s', '6s', '8s', '5d', '4s', '3s' ])).evalType
 			).to.not.equal('straight-flush');
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Jc', 'Ts', 'Kc', 'Qc', '9c', '2c', 'Tc' ]), 'flush'),
 				{
-					type: 'flush',
+					evalType: 'flush',
 					suit: getSuitFromString('c'),
 					hand: [ 'Kc', 'Qc', 'Jc', 'Tc', '9c' ]
 				}
@@ -201,7 +202,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Jc', 'Ts', 'Kc', 'Qc', '9c', '2c', 'Tc' ]), 'straight'),
 				{
-					type: 'straight',
+					evalType: 'straight',
 					highValue: getValueFromString('K'),
 					hand: [ 'Kc', 'Qc', 'Jc', 'Ts', '9c' ]
 				}
@@ -212,7 +213,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ 'Qc', 'Qd', '5s', '5c', 'Qs', 'Qh', '3c' ])),
 				{
-					type: 'four-of-a-kind',
+					evalType: 'four-of-a-kind',
 					value: getValueFromString('Q'),
 					kickerValues: [ getValueFromString('5') ],
 					hand: [ 'Qc', 'Qd', 'Qs', 'Qh', '5s' ]
@@ -224,7 +225,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Ah' ])),
 				{
-					type: 'full-house',
+					evalType: 'full-house',
 					threeValue: getValueFromString('J'),
 					twoValue: getValueFromString('A'),
 					hand: [ 'Jh', 'Jd', 'Jc', 'Ad', 'Ah' ]
@@ -233,7 +234,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'full-house'),
 				{
-					type: 'full-house',
+					evalType: 'full-house',
 					threeValue: getValueFromString('J'),
 					twoValue: getValueFromString('8'),
 					hand: [ 'Js', 'Jh', 'Jd', '8s', '8c' ]
@@ -245,7 +246,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ 'Kc', '8c', 'As', '6c', 'Qc', '4c', '2c' ])),
 				{
-					type: 'flush',
+					evalType: 'flush',
 					suit: getSuitFromString('c'),
 					kickerValues: [
 						getValueFromString('K'),
@@ -258,7 +259,7 @@ describe('handEval', function() {
 				}
 			);
 			expect(
-				getHandResult(makeHand([ 'Tc', '8h', '7c', '6c', '5c', '4c', '3c' ])).type
+				getHandResult(makeHand([ 'Tc', '8h', '7c', '6c', '5c', '4c', '3c' ])).evalType
 			).to.not.equal('flush');
 		});
 
@@ -266,7 +267,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ 'Ac', 'Kc', 'Qd', '4s', 'Ts', 'Jh' ])),
 				{
-					type: 'straight',
+					evalType: 'straight',
 					highValue: getValueFromString('A'),
 					hand: [ 'Ac', 'Kc', 'Qd', 'Jh', 'Ts' ]
 				}
@@ -274,7 +275,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ 'Ad', '4s', 'As', '2h', 'Kh', '3c', '5c' ])),
 				{
-					type: 'straight',
+					evalType: 'straight',
 					highValue: getValueFromString('5'),
 					hand: [ '5c', '4s', '3c', '2h', 'As' ]
 				}
@@ -282,13 +283,13 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ '3s', '4s', '5h', '6h', '7c', '8h', '9s' ])),
 				{
-					type: 'straight',
+					evalType: 'straight',
 					highValue: getValueFromString('9'),
 					hand: [ '9s', '8h', '7c', '6h', '5h' ]
 				}
 			);
 			expect(
-				getHandResult(makeHand([ 'Ks', 'Qs', 'Jh', 'Td', '9s', '6s', '3s' ])).type
+				getHandResult(makeHand([ 'Ks', 'Qs', 'Jh', 'Td', '9s', '6s', '3s' ])).evalType
 			).to.not.equal('straight');
 		});
 
@@ -296,25 +297,25 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ '4c', '5h', '5s', '6c', '9h', '5d', 'Kc' ])),
 				{
-					type: 'three-of-a-kind',
+					evalType: 'three-of-a-kind',
 					value: getValueFromString('5'),
 					kickerValues: [ getValueFromString('K'), getValueFromString('9') ],
 					hand: [ '5h', '5s', '5d', 'Kc', '9h' ]
 				}
 			);
 			expect(
-				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', '5c', 'Kh' ])).type
+				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', '5c', 'Kh' ])).evalType
 			).to.not.equal('three-of-a-kind');
 			expect(
-				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Kh', 'Kc', '2c', '4d' ])).type
+				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Kh', 'Kc', '2c', '4d' ])).evalType
 			).to.not.equal('three-of-a-kind');
 			expect(
-				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Kh', 'Jc', 'Th', '9d' ])).type
+				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Kh', 'Jc', 'Th', '9d' ])).evalType
 			).to.not.equal('three-of-a-kind');
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'three-of-a-kind'),
 				{
-					type: 'three-of-a-kind',
+					evalType: 'three-of-a-kind',
 					value: getValueFromString('J'),
 					hand: [ 'Js', 'Jh', 'Jd', 'Jc', 'Ad' ]
 				}
@@ -325,7 +326,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ '4c', '5h', '5s', '6c', '4h', 'As', 'Kc' ])),
 				{
-					type: 'two-pair',
+					evalType: 'two-pair',
 					values: [ getValueFromString('5'), getValueFromString('4') ],
 					kickerValues: [ getValueFromString('A') ],
 					hand: [ '5h', '5s', '4h', '4c', 'As' ]
@@ -334,19 +335,19 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ '4c', '5h', '5s', '2c', '4h', 'As', 'Ac' ])),
 				{
-					type: 'two-pair',
+					evalType: 'two-pair',
 					values: [ getValueFromString('A'), getValueFromString('5') ],
 					kickerValues: [ getValueFromString('4') ],
 					hand: [ 'As', 'Ac', '5s', '5h', '4h' ]
 				}
 			);
 			expect(
-				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', 'Kh' ])).type
+				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', 'Kh' ])).evalType
 			).to.not.equal('two-pair');
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'two-pair'),
 				{
-					type: 'two-pair',
+					evalType: 'two-pair',
 					values: [ getValueFromString('J'), getValueFromString('8') ],
 					kickerValues: [ getValueFromString('A') ],
 					hand: [ 'Js', 'Jh', '8s', '8c', 'Ad' ]
@@ -358,7 +359,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ '4c', '5h', '5s', '6c', 'Th', 'Ad', 'Kc' ])),
 				{
-					type: 'pair',
+					evalType: 'pair',
 					value: getValueFromString('5'),
 					kickerValues: [
 						getValueFromString('A'),
@@ -369,12 +370,12 @@ describe('handEval', function() {
 				}
 			);
 			expect(
-				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', '5c', 'Jh' ])).type
+				getHandResult(makeHand([ 'Ks', 'Qs', 'Kd', 'Qd', '5c', 'Jh' ])).evalType
 			).to.not.equal('pair');
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', '8s', 'Ad', 'Js' ]), 'pair'),
 				{
-					type: 'pair',
+					evalType: 'pair',
 					value: getValueFromString('J'),
 					kickerValues: [
 						getValueFromString('A'),
@@ -390,7 +391,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getHandResult(makeHand([ '4c', '5h', 'Qs', '6c', 'Th', 'Ad', 'Jc' ])),
 				{
-					type: 'high-cards',
+					evalType: 'high-cards',
 					kickerValues: [
 						getValueFromString('A'),
 						getValueFromString('Q'),
@@ -404,7 +405,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Jh', 'Jd', 'Jc', '8c', 'As', 'Ad', 'Js' ]), 'high-cards'),
 				{
-					type: 'high-cards',
+					evalType: 'high-cards',
 					kickerValues: [
 						getValueFromString('A'),
 						getValueFromString('A'),
@@ -421,7 +422,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'As', '5s', '6d', 'Kd', 'Ks', '2s' ]), 'flush-draw'),
 				{
-					type: 'flush-draw',
+					evalType: 'flush-draw',
 					suit: getSuitFromString('s'),
 					remainingCards: 1,
 					kickerValues: [
@@ -436,7 +437,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Ah', '5h', '6d', 'Kd', 'Kh' ]), 'flush-draw'),
 				{
-					type: 'flush-draw',
+					evalType: 'flush-draw',
 					suit: getSuitFromString('h'),
 					remainingCards: 2,
 					kickerValues: [
@@ -450,7 +451,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Ah', '5h', '6h', 'Kd', 'Kh', '3h' ]), 'flush-draw'),
 				{
-					type: 'flush-draw',
+					evalType: 'flush-draw',
 					suit: getSuitFromString('h'),
 					remainingCards: 0,
 					kickerValues: [
@@ -482,7 +483,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ '2s', '3s', '4h', '5h', 'Td', 'Kc' ]), 'straight-draw'),
 				{
-					type: 'straight-draw',
+					evalType: 'straight-draw',
 					highestCardsToStraight: 4,
 					highestCardsToStraightCombinations: 2,
 					draws: [ {
@@ -500,7 +501,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'As', '3s', '4s', '5s', '6s', '7d' ]), 'straight-draw'),
 				{
-					type: 'straight-draw',
+					evalType: 'straight-draw',
 					highestCardsToStraight: 5,
 					highestCardsToStraightCombinations: 1,
 					draws: [ {
@@ -523,7 +524,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ 'Td', '8d', '9s', 'Th', 'Qh', 'Kh' ]), 'straight-draw'),
 				{
-					type: 'straight-draw',
+					evalType: 'straight-draw',
 					highestCardsToStraight: 4,
 					highestCardsToStraightCombinations: 1,
 					draws: [ {
@@ -536,7 +537,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ '4d', '5d', '6d', '7s', '9h' ]), 'straight-draw'),
 				{
-					type: 'straight-draw',
+					evalType: 'straight-draw',
 					highestCardsToStraight: 4,
 					highestCardsToStraightCombinations: 2,
 					draws: [ {
@@ -561,7 +562,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ '5d', '7h', '9d', 'Jh', 'Kd' ]), 'straight-draw'),
 				{
-					type: 'straight-draw',
+					evalType: 'straight-draw',
 					highestCardsToStraight: 3,
 					highestCardsToStraightCombinations: 3,
 					draws: [ {
@@ -582,7 +583,7 @@ describe('handEval', function() {
 			checkHandResult(
 				getEvaluationByType(makeHand([ '2s', '3s', '4h', 'Tc', 'Jc' ]), 'straight-draw'),
 				{
-					type: 'straight-draw',
+					evalType: 'straight-draw',
 					highestCardsToStraight: 3,
 					highestCardsToStraightCombinations: 2,
 					draws: [ {
@@ -722,16 +723,16 @@ describe('handEval', function() {
 
 	});
 
-	describe('#getFullEvaluation', function() {
+	describe('#getResultEvaluation', function() {
 
 		it('should do input sanity checking', function() {
 			expect(() => {
-				return getFullEvaluation(makeHand(
+				return getResultEvaluation(makeHand(
 					[ 'As', 'Ac' ]
 				));
 			}).to.throw(XError);
 			expect(() => {
-				return getFullEvaluation(makeHand(
+				return getResultEvaluation(makeHand(
 					[ 'As', 'Ac', 'Ks', 'Kc', 'Jd', '9s', '7c', '3c' ]
 				));
 			}).to.throw(XError);
@@ -739,43 +740,43 @@ describe('handEval', function() {
 
 		it('should correctly evaluate very strong hands', function() {
 			checkHandResult(
-				getFullEvaluation(makeHand([ '2s', '2h', '3h', '4h', '5h', '6h' ])),
+				getResultEvaluation(makeHand([ '2s', '2h', '3h', '4h', '5h', '6h' ])),
 				{
 					result: {
-						type: 'straight-flush',
+						evalType: 'straight-flush',
 						suit: getSuitFromString('h'),
 						highValue: getValueFromString('6')
 					},
 					evaluations: [ {
-						type: 'straight-flush',
+						evalType: 'straight-flush',
 						suit: getSuitFromString('h'),
 						highValue: getValueFromString('6')
 					} ]
 				}
 			);
 			checkHandResult(
-				getFullEvaluation(makeHand([ '2s', '2h', '2d', '2c', '5h', '6h','7h' ])),
+				getResultEvaluation(makeHand([ '2s', '2h', '2d', '2c', '5h', '6h','7h' ])),
 				{
 					result: {
-						type: 'four-of-a-kind',
+						evalType: 'four-of-a-kind',
 						value: getValueFromString('2')
 					},
 					evaluations: [ {
-						type: 'four-of-a-kind',
+						evalType: 'four-of-a-kind',
 						value: getValueFromString('2')
 					} ]
 				}
 			);
 			checkHandResult(
-				getFullEvaluation(makeHand([ '2c', '2h', '2s', '3s', '3d', '4s', '4c' ])),
+				getResultEvaluation(makeHand([ '2c', '2h', '2s', '3s', '3d', '4s', '4c' ])),
 				{
 					result: {
-						type: 'full-house',
+						evalType: 'full-house',
 						threeValue: getValueFromString('2'),
 						twoValue: getValueFromString('4')
 					},
 					evaluations: [ {
-						type: 'full-house',
+						evalType: 'full-house',
 						threeValue: getValueFromString('2'),
 						twoValue: getValueFromString('4')
 					} ]
@@ -785,47 +786,47 @@ describe('handEval', function() {
 
 		it('should include results and all possible draws', function() {
 			checkHandResult(
-				getFullEvaluation(makeHand([ 'Kh', 'Jh', 'Th', '4s', '3s', '2s' ])),
+				getResultEvaluation(makeHand([ 'Kh', 'Jh', 'Th', '4s', '3s', '2s' ])),
 				{
 					result: {
-						type: 'high-cards'
+						evalType: 'high-cards'
 					},
 					evaluations: [ {
-						type: 'high-cards'
+						evalType: 'high-cards'
 					} ]
 				}
 			);
 			checkHandResult(
-				getFullEvaluation(makeHand([ '4h', '7h', 'Th', 'Jh', 'Qh', '7c', '7s' ])),
+				getResultEvaluation(makeHand([ '4h', '7h', 'Th', 'Jh', 'Qh', '7c', '7s' ])),
 				{
 					result: {
-						type: 'flush',
+						evalType: 'flush',
 						suit: getSuitFromString('h')
 					},
 					evaluations: [ {
-						type: 'three-of-a-kind',
+						evalType: 'three-of-a-kind',
 						value: getValueFromString('7')
 					}, {
-						type: 'flush',
+						evalType: 'flush',
 						suit: getSuitFromString('h')
 					} ]
 				}
 			);
 			checkHandResult(
-				getFullEvaluation(makeHand([ '4s', '5s', '6s', '7s', '5h', '7h' ])),
+				getResultEvaluation(makeHand([ '4s', '5s', '6s', '7s', '5h', '7h' ])),
 				{
 					result: {
-						type: 'two-pair',
+						evalType: 'two-pair',
 						values: [ getValueFromString('7'), getValueFromString('5') ]
 					},
 					evaluations: [ {
-						type: 'two-pair',
+						evalType: 'two-pair',
 						values: [ getValueFromString('7'), getValueFromString('5') ]
 					}, {
-						type: 'flush-draw',
+						evalType: 'flush-draw',
 						suit: getSuitFromString('s')
 					}, {
-						type: 'straight-draw',
+						evalType: 'straight-draw',
 						highestCardsToStraight: 4,
 						highestCardsToStraightCombinations: 2
 					} ]
@@ -835,14 +836,14 @@ describe('handEval', function() {
 
 		it('should not include draws in 7 card hands', function() {
 			checkHandResult(
-				getFullEvaluation(makeHand([ 'Kh', 'Ks', 'Jc', '8d', '7d', '6d', '5d' ])),
+				getResultEvaluation(makeHand([ 'Kh', 'Ks', 'Jc', '8d', '7d', '6d', '5d' ])),
 				{
 					result: {
-						type: 'pair',
+						evalType: 'pair',
 						value: getValueFromString('K')
 					},
 					evaluations: [ {
-						type: 'pair',
+						evalType: 'pair',
 						value: getValueFromString('K')
 					} ]
 				}
@@ -851,36 +852,73 @@ describe('handEval', function() {
 
 		it('should not include straight/flush draws in hands with a made straight/flush', function() {
 			checkHandResult(
-				getFullEvaluation(makeHand([ 'As', 'Jc', 'Tc', '8c', '6c', '4c' ])),
+				getResultEvaluation(makeHand([ 'As', 'Jc', 'Tc', '8c', '6c', '4c' ])),
 				{
 					result: {
-						type: 'flush',
+						evalType: 'flush',
 						suit: getSuitFromString('c')
 					},
 					evaluations: [ {
-						type: 'high-cards'
+						evalType: 'high-cards'
 					}, {
-						type: 'flush',
+						evalType: 'flush',
 						suit: getSuitFromString('c')
 					} ]
 				}
 			);
 			checkHandResult(
-				getFullEvaluation(makeHand([ 'Kc', 'Qh', 'Jh', 'Th', '6h', '4h' ])),
+				getResultEvaluation(makeHand([ 'Kc', 'Qh', 'Jh', 'Th', '6h', '4h' ])),
 				{
 					result: {
-						type: 'flush',
+						evalType: 'flush',
 						suit: getSuitFromString('h')
 					},
 					evaluations: [ {
-						type: 'high-cards'
+						evalType: 'high-cards'
 					}, {
-						type: 'flush',
+						evalType: 'flush',
 						suit: getSuitFromString('h')
 					}, {
-						type: 'straight-draw',
+						evalType: 'straight-draw',
 						highestCardsToStraight: 4,
 						highestCardsToStraightCombinations: 2
+					} ]
+				}
+			);
+		});
+
+	});
+
+	describe('#getFullEvaluation', function() {
+
+		it('should return data in the correct format', function() {
+			let fullEval = getFullEvaluation(
+				makeHand([ 'Qc', 'Qs' ]),
+				makeHand([ '2s', '5s', '8s' ])
+			);
+			expect(fullEval.pocket.length).to.equal(2);
+			expect(fullEval.community.length).to.equal(3);
+			checkHandResult(
+				fullEval.pocketEval,
+				{
+					pairValue: cardUtils.QUEEN,
+					inclusiveStraightCount: 0,
+					semiInclusiveStraightCount: 3
+				}
+			);
+			checkHandResult(
+				fullEval.resultEval,
+				{
+					result: {
+						evalType: 'pair',
+						value: cardUtils.QUEEN
+					},
+					evaluations: [ {
+						evalType: 'pair',
+						value: cardUtils.QUEEN
+					}, {
+						evalType: 'flush-draw',
+						suit: cardUtils.SPADES
 					} ]
 				}
 			);
