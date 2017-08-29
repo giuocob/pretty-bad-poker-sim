@@ -10,6 +10,8 @@ const getFullEvaluation = handEval.getFullEvaluation;
 const handMatch = require('../lib/hand-match');
 const normalizeFullEval = handMatch.normalizeFullEval;
 const getNormalizedEvalQuery = handMatch.getNormalizedEvalQuery;
+const processPokerRoundMatches = handMatch.processPokerRoundMatches;
+const PokerTable = require('../lib/poker-table');
 
 function makeHand(strArr) {
 	return strArr.map((str) => {
@@ -79,6 +81,38 @@ describe('handMatch', function() {
 			expect(function() {
 				return getNormalizedEvalQuery(queryData);
 			}).to.throw(XError);
+		});
+
+	});
+
+	describe('#processPokerRoundMatches', function() {
+
+		it('should correctly match eval objects', function() {
+			let table = new PokerTable(2);
+			let stackedDeckFunc = table.createStackedDeckFunc({
+				0: [ 2, 3 ],
+				community: [ 8, 9, 25 ]
+			});
+			let round = table.playRound(stackedDeckFunc());
+			let goodMatch = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.evaluations': {
+						$elemMatch: {
+							evalType: 'flush-draw',
+							remainingCards: 1
+						}
+					}
+				}
+			};
+			let badMatch = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result.evalType': 'flush'
+				}
+			};
+			expect(processPokerRoundMatches(round, goodMatch)).to.equal(true);
+			expect(processPokerRoundMatches(round, badMatch)).to.equal(false);
 		});
 
 	});
