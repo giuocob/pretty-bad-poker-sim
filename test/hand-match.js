@@ -90,8 +90,8 @@ describe('handMatch', function() {
 		it('should correctly match eval objects', function() {
 			let table = new PokerTable(2);
 			let stackedDeckFunc = table.createStackedDeckFunc({
-				0: [ 2, 3 ],
-				community: [ 8, 9, 25 ]
+				0: [ '2s', '3s' ],
+				community: [ '7s', '8s', 'Kh' ]
 			});
 			let round = table.playRound(stackedDeckFunc());
 			let goodMatch = {
@@ -113,6 +113,116 @@ describe('handMatch', function() {
 			};
 			expect(processPokerRoundMatches(round, goodMatch)).to.equal(true);
 			expect(processPokerRoundMatches(round, badMatch)).to.equal(false);
+		});
+
+		it('should support $minStrength and $maxStrength', function() {
+			let table = new PokerTable(1);
+			let stackedDeckFunc = table.createStackedDeckFunc({
+				0: [ 'Ks', '5c' ],
+				community: [ 'Ah', 'Kh', '5h' ]
+			});
+			let round = table.playRound(stackedDeckFunc());
+
+			let pairOrBetter = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$minStrength: { evalType: 'pair' }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, pairOrBetter)).to.equal(true);
+
+			let pairOrWorse = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$maxStrength: { evalType: 'pair' }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, pairOrWorse)).to.equal(false);
+
+			let straightOrBetter = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$minStrength: { evalType: 'straight' }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, straightOrBetter)).to.equal(false);
+
+			let straightOrWorse = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$maxStrength: { evalType: 'straight' }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, straightOrWorse)).to.equal(true);
+
+			let twoPairOrBetter = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$minStrength: { evalType: 'two-pair' }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, twoPairOrBetter)).to.equal(true);
+
+			let twoPairOrWorse = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$maxStrength: { evalType: 'two-pair' }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, twoPairOrWorse)).to.equal(true);
+
+			let weakTwoPairOrBetter = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$minStrength: { evalType: 'two-pair', values: [ cardUtils.JACK ] }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, weakTwoPairOrBetter)).to.equal(true);
+
+			let weakTwoPairOrWorse = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$maxStrength: { evalType: 'two-pair', values: [ cardUtils.JACK ] }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, weakTwoPairOrWorse)).to.equal(false);
+
+			let strongTwoPairOrBetter = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$minStrength: { evalType: 'two-pair', values: [ cardUtils.ACE ] }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, strongTwoPairOrBetter)).to.equal(false);
+
+			let strongTwoPairOrWorse = {
+				roundPart: 'flop',
+				query: {
+					'resultEval.result': {
+						$maxStrength: { evalType: 'two-pair', values: [ cardUtils.ACE ] }
+					}
+				}
+			};
+			expect(processPokerRoundMatches(round, strongTwoPairOrWorse)).to.equal(true);
+
 		});
 
 	});
